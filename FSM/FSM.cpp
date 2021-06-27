@@ -127,6 +127,7 @@ bool FSM::LoadFSM(std::string FilePath) {
 			return LogError("Invalid or corrupt data.");
 		Position++;
 	}
+	return true;
 }
 
 int FSM::GetGroundCount() {
