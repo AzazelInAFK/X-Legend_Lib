@@ -16,7 +16,7 @@ bool FSM::Skip(int Count) {
 float FSM::LittleEndian32f() {
 	float Buffer;
 	char Arr[]{
-		File.get(),File.get(),File.get(),File.get()
+		(char)File.get(), (char)File.get(), (char)File.get(), (char)File.get()
 	};
 	memcpy(&Buffer, Arr, sizeof(float));
 
@@ -127,6 +127,7 @@ bool FSM::LoadFSM(std::string FilePath) {
 			return LogError("Invalid or corrupt data.");
 		Position++;
 	}
+	return true;
 }
 
 int FSM::GetGroundCount() {
