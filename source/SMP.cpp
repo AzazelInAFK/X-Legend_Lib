@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Code produced by Azazel.										   //
+//You can contact me on Ragezone here "https://forum.ragezone.com/members/2000318605.html".		   //
+//I take no responsaiblity over this code or how it is used.						   //
+//This code was tested on Grand Fantasia files, it may or may not work on AK, EE or another X-Legend game. //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "SMP.h"
 
 unsigned int Seraph::SMP::GetDataSize() {
