@@ -37,6 +37,6 @@ Seraph::PKG myPKGObject;
 myPKGObject.Load(false);
 ```
 If this function parameter is set to true, the function will use the files in the folder to repack them into the original PKG files.\
-Please notice that this is a demo version and it is not 100% trustable.
+Otherwise, if this function parameter is set to false, the function will instead unpack all the files from the game into the current folder.
 
-If this function parameter is set to false, the function will instead unpack all the files from the game into the current folder.
+Please notice that this PKG tool is a demo version and it is not yet 100% trustable.
