@@ -18,7 +18,7 @@
 
 namespace Seraph {
 	class FSM { // File info:
-		struct FSMHeader {
+		struct CoreHeader {
 			char Signature[0x54];
 			long HeightmapCount;
 		} m_FSMHeader;
@@ -54,11 +54,18 @@ namespace Seraph {
 			float Scale;
 			char Name[STRINGSZ];
 		}*Object;
+	private:
+		std::vector<ObjectType> ImportedObj; // Extra objects, merged in the output file.
 
+		std::ifstream In;
 		bool InMemory{ false };
 	public:
+		bool Save(std::string OutputPath);
 		bool Load(std::string FilePath);
 		bool ExportHeightMapAsBMP(std::string FilePath);
 		bool AsASCIIFile(bool WriteHeightmap = false);
+		bool ImportHeightMapFromBMP(std::string FilePath, long HeightMapSlotID);
+		bool ImportObject(float X, float Y, float Z, float Rotation, float Scale, char* Name, long NameSz);
+		void Shutdown();
 	};
 }
