@@ -42,7 +42,7 @@ namespace Seraph {
 	private: // File data:
 		struct HeightMapType {
 			float HeightMap;
-			float Dummy;
+			char m_acVertexColor[4];
 		}**HeightMap;
 		struct TextureLayerType {
 			char Material[STRINGSZ];
