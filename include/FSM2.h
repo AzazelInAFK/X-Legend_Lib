@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Code produced by Azazel.										                                                                  //
-//You can contact me on Ragezone here "https://forum.ragezone.com/members/2000318605.html".		                  //
-//I take no responsaiblity over this code or how it is used.						                                        //
+//Code produced by Azazel.											//
+//You can contact me on Ragezone here "https://forum.ragezone.com/members/2000318605.html".			//
+//I take no responsaiblity over this code or how it is used.							//
 //This code was tested on a few Eden Eternal files, it is meant to be used in newer games, if you're modifying  //
 //Grand Fantasia or any other older game, use "FSM.h" instead of this one.                                      //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,15 +81,17 @@ protected:
 	struct InstanceData {
 		unsigned long m_ulUnknown1;
 		float m_afPosition[3];
-		float m_afRotation[3];
+		float m_fRotation;
+		unsigned long m_ulUnknown2;
+		unsigned long m_ulUnknown3;
 		float m_fScale;
 	};
 
 	struct ObjectData {
 		float m_afPosition[3];
-		float m_afRotation[3];
-		float m_afScale[3];
-		unsigned long m_aulUnknown[4];
+		unsigned long m_aulUnknown[8];
+		float m_fRotation;
+		float m_fScale;
 		char m_acName[0x28];
 	};
 
