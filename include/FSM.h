@@ -67,5 +67,13 @@ namespace Seraph {
 		bool ImportHeightMapFromBMP(std::string FilePath, long HeightMapSlotID);
 		bool ImportObject(float X, float Y, float Z, float Rotation, float Scale, char* Name, long NameSz);
 		void Shutdown();
+		
+	public: // Getters
+		long GetHeightMapCount();
+		long GetWidthAt(int HeightMapID);
+		long GetHeightAt(int HeightMapID);
+		long GetScaleAt(int HeightMapID);
+		long GetMaterialCountAt(int TextureLayerID);
+		long GetObjectCount();
 	};
 }
