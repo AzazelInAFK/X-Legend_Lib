@@ -156,6 +156,30 @@ bool Seraph::FSM::Load(std::string FilePath) {
 	return true;
 }
 
+long Seraph::FSM::GetHeightMapCount() {
+	return m_FSMHeader.HeightmapCount;
+}
+
+long Seraph::FSM::GetWidthAt(int HeightMapID) {
+	return m_HeightMapHeader[HeightMapID].Width;
+}
+
+long Seraph::FSM::GetHeightAt(int HeightMapID) {
+	return m_HeightMapHeader[HeightMapID].Height;
+}
+
+long Seraph::FSM::GetScaleAt(int HeightMapID) {
+	return m_HeightMapHeader[HeightMapID].Scale;
+}
+
+long Seraph::FSM::GetMaterialCountAt(int TextureLayerID) {
+	return m_TextureLayerHeader[TextureLayerID].MaterialCount;
+}
+
+long Seraph::FSM::GetObjectCount() {
+	return m_ObjectHeader.ObjectCount;
+}
+
 void Seraph::FSM::Shutdown() {
 	if (!InMemory)
 		return;
