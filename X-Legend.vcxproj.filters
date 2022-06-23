@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Arquivos de Origem">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Arquivos de Cabeçalho">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="X-Legend">
+      <UniqueIdentifier>{34187cc5-ceb9-440e-a7b9-3026d8e9806f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="X-Legend\Header">
+      <UniqueIdentifier>{daae13d7-5885-4ccf-9e95-b65758c4b012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="X-Legend\Source">
+      <UniqueIdentifier>{83da7046-c326-4465-829f-cc00f2c802bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{7abb89c0-b4e6-404c-bd25-60088bc26f98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="X-Legend\Source\Util">
+      <UniqueIdentifier>{2fa8afb0-e1b4-4360-bcfe-c3122cd8db82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="X-Legend\Header\Util">
+      <UniqueIdentifier>{e29f545f-5e81-4e8d-b014-4e026579d696}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="PKG.h">
+      <Filter>X-Legend\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="SMP.h">
+      <Filter>X-Legend\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\crc32.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\deflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\gzguts.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\inffast.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\inffixed.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\inflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\inftrees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\trees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\zconf.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\zlib.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\zutil.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="FSM.h">
+      <Filter>X-Legend\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="BMP.h">
+      <Filter>X-Legend\Header\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Error.h">
+      <Filter>X-Legend\Header\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="File.h">
+      <Filter>X-Legend\Header\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="FSM2.h">
+      <Filter>X-Legend\Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PKG.cpp">
+      <Filter>X-Legend\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SMP.cpp">
+      <Filter>X-Legend\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\gzclose.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\gzlib.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\gzread.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\gzwrite.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\infback.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\uncompr.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib-1.2.11\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="FSM.cpp">
+      <Filter>X-Legend\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="BMP.cpp">
+      <Filter>X-Legend\Source\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="FSM2.cpp">
+      <Filter>X-Legend\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
