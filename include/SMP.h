@@ -9,9 +9,10 @@
 
 #include <iostream>
 #include <string>
-#include <fstream>
 
 #include "Error.h"
+#include "BMP.h"
+#include "File.h"
 
 namespace Seraph {
 	class SMP {
@@ -19,26 +20,20 @@ namespace Seraph {
 		char* Signature;
 		short LinkSz;
 		char* Link;
+		//long unk;
 		struct Header {
-			int Unknown;
-			short Width;
-			short Height;
-			int Unknown2;
-		} m_Header;
+			short Width, Height;
+			long LinearSz;
+		}m_Header;
+		char* Data;
 
-		unsigned int FullSz;
-		unsigned char* Data;
-		std::ifstream File;
-	private:
-		bool SecurityCheck();
+		File In;
+		File Out;
 	public:
+		bool Save(std::string OutputPath);
 		bool Load(std::string FilePath);
-
-		unsigned char* GetData();
-		unsigned int GetDataSize();
-
-		short GetWidth();
-		short GetHeight();
-		std::string GetRelatedScene();
+		bool ExportAsBMP(std::string OutputPath);
+		void RemoveCollision();
+		void Shutdown();
 	};
 }
