@@ -8,9 +8,9 @@
 #include "FSM.h"
 
 bool Seraph::FSM::AsASCIIFile(bool WriteHeightmap) {
-	std::ofstream out("FSMOut.txt");
-	if (!out.is_open() || !InMemory)
-		return Log("Impossible to create output file and/or write ascii version of this file.(FSMOut.txt)");
+	File out;
+	out.open("FSMOut.txt", std::ios::in);
+	Assert(InMemory);
 	out << "Objects in this file:\n";
 	for (int ObjectID{ 0 }; ObjectID < m_ObjectHeader.ObjectCount; ObjectID++) {
 		out << "Name: ";
@@ -35,8 +35,7 @@ bool Seraph::FSM::ImportHeightMapFromBMP(std::string FilePath, long HeightMapSlo
 	if (HeightMapSlotID >= m_FSMHeader.HeightmapCount)
 		return false;
 	BMP Img;
-	if (!Img.Import(FilePath))
-		return Log("Failed to import bmp file as heightmap.");
+	Assert(Img.Import(FilePath));
 	m_HeightMapHeader[HeightMapSlotID].Width = Img.Info.biWidth;
 	m_HeightMapHeader[HeightMapSlotID].Height = Img.Info.biHeight;
 	m_HeightMapHeader[HeightMapSlotID].LinearSz = Img.Info.biWidth * Img.Info.biHeight * sizeof(HeightMapType);
@@ -61,14 +60,15 @@ bool Seraph::FSM::ExportHeightMapAsBMP(std::string FilePath) {
 		for (int i{ 0 }; i < m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height; i++)
 			for (int j{ 0 };j<4;j++)
 			transfData[i*4+j] = HeightMap[Layer][i].HeightMap;
-		if (!BMP.Export(FilePath, m_HeightMapHeader[Layer].Width, m_HeightMapHeader[Layer].Height, transfData))
-			return Log("Failed to convert and export heightmap to BMP.");
+		Assert(BMP.Export(FilePath, m_HeightMapHeader[Layer].Width, m_HeightMapHeader[Layer].Height, transfData));
 	}
 	return true;
 }
 
-bool Seraph::FSM::ImportObject(float X, float Y, float Z, float Rotation, float Scale, char* Name, long NameSz) {
-	if (NameSz > STRINGSZ)
+bool Seraph::FSM::ImportObject(float X, float Y, float Z, float Rotation, float Scale, const char* Name) {
+	int iSize = strlen(Name);
+
+	if (iSize > STRINGSZ)
 		return false;
 	ObjectType Buffer;
 	Buffer.X = X;
@@ -76,9 +76,9 @@ bool Seraph::FSM::ImportObject(float X, float Y, float Z, float Rotation, float 
 	Buffer.Z = Z;
 	Buffer.Rotation = Rotation;
 	Buffer.Scale = Scale;
-	for (int i{ 0 }; i < NameSz; i++)
+	for (int i{ 0 }; i < iSize; i++)
 		Buffer.Name[i] = Name[i];
-	for (int i{ NameSz }; i < STRINGSZ; i++)
+	for (int i{ iSize }; i < STRINGSZ; i++)
 		Buffer.Name[i] = '\0';
 
 	ImportedObj.push_back(Buffer);
@@ -87,71 +87,44 @@ bool Seraph::FSM::ImportObject(float X, float Y, float Z, float Rotation, float 
 }
 
 bool Seraph::FSM::Save(std::string OutputPath) {
-	std::ofstream Out;
-	Out.open(OutputPath, std::ios::binary);
-	if (!Out.is_open())
-		return Log("Failed to save FSM file in " + OutputPath);
-	Out.write((char*)&m_FSMHeader, sizeof(CoreHeader));
+	File Out;
+	Assert(Out.open(OutputPath, std::ios::out | std::ios::binary));
+	Assert(Out.write(&m_FSMHeader));
 	for (int Layer{ 0 }; Layer < m_FSMHeader.HeightmapCount; Layer++) {
-		Out.write((char*)&m_HeightMapHeader[Layer], sizeof(HeightMapHeader));
-		for (int Point{ 0 }; Point < m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height; Point++)
-			Out.write((char*)&HeightMap[Layer][Point], sizeof(HeightMapType));
-		Out.write((char*)&m_TextureLayerHeader[Layer], sizeof(TextureLayerHeader));
-		for (int Material{ 0 }; Material < m_TextureLayerHeader[Layer].MaterialCount; Material++)
-			Out.write((char*)&TextureLayer[Layer][Material], sizeof(TextureLayerType));
+		Assert(Out.write(&m_HeightMapHeader[Layer]));
+		Assert(Out.write(HeightMap[Layer], m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height));
+		Assert(Out.write(&m_TextureLayerHeader[Layer]));
+		Assert(Out.write(TextureLayer[Layer], m_TextureLayerHeader[Layer].MaterialCount));
 	}
 	m_ObjectHeader.ObjectCount += ImportedObj.size();
 	m_ObjectHeader.LinearSz += ImportedObj.size() * sizeof(ObjectType);
-	Out.write((char*)&m_ObjectHeader, sizeof(ObjectHeader));
-	for (int ObjectID{ 0 }; ObjectID < m_ObjectHeader.ObjectCount; ObjectID++)
-		Out.write((char*)&Object[ObjectID], sizeof(ObjectType));
-	for (int ObjectID{ 0 }; ObjectID < ImportedObj.size(); ObjectID++) // extra imported object data.
-		Out.write((char*)&ImportedObj[ObjectID], sizeof(ObjectType));
+	Assert(Out.write(&m_ObjectHeader));
+	Assert(Out.write(Object, m_ObjectHeader.ObjectCount - ImportedObj.size()));
+	Assert(Out.write(ImportedObj.data(), ImportedObj.size()));
 	return true;
 }
 
 bool Seraph::FSM::Load(std::string FilePath) {
-	std::string MemoryErr = "Unexpected end of file.";
-	In.open(FilePath, std::ios::binary);
-	if (!In.is_open())
-		return Log("Failed to open/read specified file: " + FilePath);
-	In.read((char*)&m_FSMHeader, sizeof(CoreHeader));
-	if (In.gcount() != sizeof(CoreHeader))
-		return Log(MemoryErr);
+	Assert (!FilePath.empty());
+	m_FilePath.assign(FilePath);
+	Assert(m_Istr.open(FilePath, std::ios::in | std::ios::binary));
+	Assert(m_Istr.read(&m_FSMHeader));
 	m_HeightMapHeader = new HeightMapHeader[m_FSMHeader.HeightmapCount];
 	m_TextureLayerHeader = new TextureLayerHeader[m_FSMHeader.HeightmapCount];
 	HeightMap = new HeightMapType * [m_FSMHeader.HeightmapCount];
 	TextureLayer = new TextureLayerType * [m_FSMHeader.HeightmapCount];
 	for (int Layer{ 0 }; Layer < m_FSMHeader.HeightmapCount; Layer++) { // Terrain routine:
-		In.read((char*)&m_HeightMapHeader[Layer], sizeof(HeightMapHeader));
-		if (In.gcount() != sizeof(HeightMapHeader))
-			return Log(MemoryErr);
+		Assert(m_Istr.read(&m_HeightMapHeader[Layer]));
 		HeightMap[Layer] = new HeightMapType[m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height];
-		for (int Point{ 0 }; Point < (m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height); Point++) {
-			In.read((char*)&HeightMap[Layer][Point], sizeof(HeightMapType));
-			if (In.gcount() != sizeof(HeightMapType))
-				return Log(MemoryErr);
-		}
-		In.read((char*)&m_TextureLayerHeader[Layer], sizeof(TextureLayerHeader));
-		if (In.gcount() != sizeof(TextureLayerHeader))
-			return Log(MemoryErr);
+		Assert(m_Istr.read(HeightMap[Layer], m_HeightMapHeader[Layer].Width * m_HeightMapHeader[Layer].Height));
+		Assert(m_Istr.read(&m_TextureLayerHeader[Layer]));
 		TextureLayer[Layer] = new TextureLayerType[m_TextureLayerHeader[Layer].MaterialCount];
-		for (int Material{ 0 }; Material < m_TextureLayerHeader[Layer].MaterialCount; Material++) {
-			In.read((char*)&TextureLayer[Layer][Material], sizeof(TextureLayerType));
-			if (In.gcount() != sizeof(TextureLayerType))
-				return Log(MemoryErr);
-		}
+		Assert(m_Istr.read(TextureLayer[Layer], m_TextureLayerHeader[Layer].MaterialCount));
 	}
-	In.read((char*)&m_ObjectHeader, sizeof(ObjectHeader));
-	if (In.gcount() != sizeof(ObjectHeader))
-		return Log(MemoryErr);
+	Assert(m_Istr.read(&m_ObjectHeader));
 	Object = new ObjectType[m_ObjectHeader.ObjectCount];
-	for (int ObjectID{ 0 }; ObjectID < m_ObjectHeader.ObjectCount; ObjectID++) { // Object routine:
-		In.read((char*)&Object[ObjectID], sizeof(ObjectType));
-		if (In.gcount() != sizeof(ObjectType))
-			return Log(MemoryErr);
-	}
-	In.close();
+	Assert(m_Istr.read(Object, m_ObjectHeader.ObjectCount));
+	m_Istr.close();
 	InMemory = true;
 	return true;
 }
@@ -183,6 +156,7 @@ long Seraph::FSM::GetObjectCount() {
 void Seraph::FSM::Shutdown() {
 	if (!InMemory)
 		return;
+	m_Istr.close();
 	memset(&m_FSMHeader, 0, sizeof(CoreHeader));
 	memset(&m_ObjectHeader, 0, sizeof(ObjectHeader));
 	delete m_HeightMapHeader;
