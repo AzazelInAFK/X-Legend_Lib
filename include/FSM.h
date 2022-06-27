@@ -7,17 +7,19 @@
 
 #pragma once
 
+#include <iostream>
+#include <vector>
+#include <iomanip>
+
 #include "Error.h"
 #include "BMP.h"
-
-#include <vector>
-#include <fstream>
-#include <iomanip>
+#include "File.h"
 
 #define STRINGSZ 0x28
 
 namespace Seraph {
 	class FSM { // File info:
+	public:
 		struct CoreHeader {
 			char Signature[0x54];
 			long HeightmapCount;
@@ -39,10 +41,9 @@ namespace Seraph {
 			unsigned long LinearSz;
 			unsigned long ObjectCount;
 		} m_ObjectHeader;
-	private: // File data:
 		struct HeightMapType {
 			float HeightMap;
-			char m_acVertexColor[4];
+			unsigned char RGBA[4];
 		}**HeightMap;
 		struct TextureLayerType {
 			char Material[STRINGSZ];
@@ -54,20 +55,23 @@ namespace Seraph {
 			float Scale;
 			char Name[STRINGSZ];
 		}*Object;
+		
+	protected:
+		std::string m_FilePath;
+
+		File m_Istr;
+		bool InMemory{ false };
 	private:
 		std::vector<ObjectType> ImportedObj; // Extra objects, merged in the output file.
-
-		std::ifstream In;
-		bool InMemory{ false };
 	public:
 		bool Save(std::string OutputPath);
 		bool Load(std::string FilePath);
 		bool ExportHeightMapAsBMP(std::string FilePath);
 		bool AsASCIIFile(bool WriteHeightmap = false);
 		bool ImportHeightMapFromBMP(std::string FilePath, long HeightMapSlotID);
-		bool ImportObject(float X, float Y, float Z, float Rotation, float Scale, char* Name, long NameSz);
+		bool ImportObject(float X, float Y, float Z, float Rotation, float Scale, const char* Name);
 		void Shutdown();
-		
+
 	public: // Getters
 		long GetHeightMapCount();
 		long GetWidthAt(int HeightMapID);
