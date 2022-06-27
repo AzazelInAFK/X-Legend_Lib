@@ -22,19 +22,26 @@ bool Seraph::PKG::EncodeFile() {
 	std::string FilePath;
 	FilePath.assign(Header.FilePath);
 	FilePath.append(Header.FileName);
-	std::ifstream File(FilePath, std::ios::binary);
-	if (!File.is_open())
-		return Log(FilePath + " was not found, or not possible to open! This file is necessary in the repack proccess.");
+	File File;
+	Assert(File.open(FilePath, std::ios::in | std::ios::binary));
 	std::string Data;
 	File.seekg(0, std::ios::end);
 	Data.reserve(File.tellg());
 	File.seekg(0, std::ios::beg);
 	Data.assign(std::istreambuf_iterator<char>(File), std::istreambuf_iterator<char>());
 	Sz = compressBound(Data.size());
+	Header.SizeOriginal = Data.size();
 	Packed = new unsigned char[Sz];
 	int err = compress2((Bytef*)Packed, (uLongf*)&Sz, (Bytef*)Data.c_str(), Data.size(),1);
-	if (err != Z_OK)
-		return Log("Failed to compress data to file.");
+	Assert(err == Z_OK);
+	Header.SizePacked = Sz;
+	std::ifstream checkpos(PKGName(),std::ios::binary);
+	if (checkpos.is_open()) {
+		checkpos.seekg(0,std::ios::end);
+		Header.Offset = checkpos.tellg();
+		checkpos.close();
+	}
+	Assert(IDXFileOut.write((char*)&Header, sizeof(FileHeader)));
 	Data.clear();
 	File.close();
 	return true;
@@ -43,34 +50,48 @@ bool Seraph::PKG::EncodeFile() {
 bool Seraph::PKG::DecodeFile() {
 	unsigned char* packed = new unsigned char[Header.SizePacked];
 	std::string FileName{ PKGName() };
-	std::ifstream Data(FileName, std::ios::binary);
-	if (!Data.is_open())
-		return Log(FileName + " is missing or was not possible to open.");
+	File Data;
+	Assert(Data.open(FileName, std::ios::in | std::ios::binary));
 	Data.seekg(Header.Offset, std::ios::beg);
-	Data.read((char*)packed, Header.SizePacked);
+	Assert(Data.read(packed, Header.SizePacked));
 	Data.close();
 	Unpacked = new unsigned char[Header.SizeOriginal];
 	uncompress((Bytef*)Unpacked, (uLongf*)&Header.SizeOriginal, (Bytef*)packed, (uLongf)Header.SizePacked);
-	delete packed;
+	delete[] packed;
 	packed = nullptr;
 	return true;
 }
 
 bool Seraph::PKG::Encrypt() {
-	if (!EncodeFile())
-		return Seraph::Error::Throw();
-	if (!WritePacked())
-		return Seraph::Error::Throw();
+	Assert(EncodeFile());
+	Assert(WritePacked());
 	Reset();
 	return true;
 }
 
+#include <direct.h> // mkdir
+
+void RecurseDirCreate(std::string FilePath) {
+	struct stat buffer;
+	const std::string Dir{ FilePath };
+	size_t index1{ 0 }, index2{ Dir.find('\\',index1) };
+	std::string Exists;
+	do {
+		std::string RecurseDir;
+		RecurseDir.assign(Exists);
+		RecurseDir.append(Dir.substr(index1, index2 - index1));
+		if (stat(RecurseDir.c_str(), &buffer))
+			_mkdir(RecurseDir.c_str());
+		index1 = index2;
+		index2 = Dir.find('\\', ++index2);
+		Exists.assign(RecurseDir);
+	} while (index2 != -1);
+}
+
 bool Seraph::PKG::Decrypt() {
-	if (!DecodeFile())
-		return Seraph::Error::Throw();
-	Seraph::RecurseDirCreate(Header.FilePath);
-	if (!WriteUnpacked())
-		return Seraph::Error::Throw();
+	Assert(DecodeFile());
+	RecurseDirCreate(Header.FilePath);
+	Assert(WriteUnpacked());
 	Reset();
 	return true;
 }
@@ -79,11 +100,9 @@ bool Seraph::PKG::WritePacked() {
 	std::string FilePath;
 	FilePath.assign(PKGName());
 	std::cout << "Write: " << Header.FileName << " in " << FilePath << "\n\n";
-	std::fstream File;
-	File.open(FilePath, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
-	if (!File.is_open())
-		return Log("Failed to create packed file: " + FilePath + " in: " + PKGName());
-	File.write((char*)Packed, Sz);
+	File File;
+	Assert(File.open(FilePath, std::ios::in | std::ios::out | std::ios::binary | std::ios::app));
+	Assert(File.write(Packed, Sz));
 	File.close();
 	return true;
 }
@@ -93,36 +112,53 @@ bool Seraph::PKG::WriteUnpacked() {
 	FullFilePath.assign(Header.FilePath);
 	FullFilePath.append(Header.FileName);
 	std::cout << "Write: " << Header.FileName << "\n\n";
-	std::ofstream Output(FullFilePath, std::ios::binary);
-	if (!Output.is_open())
-		return Log("Failed to create " + FullFilePath);
-	Output.write((char*)Unpacked, Header.SizeOriginal);
-	Output.close();
+	File file;
+	Assert(file.open(FullFilePath, std::ios::out | std::ios::binary));
+	Assert(file.write(Unpacked, Header.SizeOriginal));
+	file.close();
 	return true;
 }
 
 void Seraph::PKG::Reset() {
 	ZeroMemory(&Header, sizeof(FileHeader));
-	delete Unpacked;
+	delete[] Unpacked;
 	Unpacked = nullptr;
-	delete Packed;
+	delete[] Packed;
 	Packed = nullptr;
 }
 
 bool Seraph::PKG::Load(bool Unpack) {
 	char TempDir[MAX_PATH];
 	int result = GetModuleFileNameA(NULL, TempDir, MAX_PATH);
-	IDXFile.open("pkg.idx", std::ios::binary);
-	if (!IDXFile.is_open())
-		return Log("pkg.idx is missing or was not possible to open.");
-	IDXFile.read((char*)&Signature, sizeof(IdxSignature));
+	IDXFile.open("pkg.idx", std::ios::in | std::ios::binary);
+	IDXFile.read(&Signature);
+	if (!Unpack) {
+		Assert(IDXFileOut.open("tempdata", std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc));
+		Assert(IDXFileOut.write((char*)&Signature, sizeof(IdxSignature)));
+	}
 	while (!IDXFile.eof()) {
-		IDXFile.read((char*)&Header, sizeof(FileHeader));
-		if (Unpack)
-			Decrypt();
-		else
-			Encrypt();
+		Assert(IDXFile.read(&Header));
+		if (Unpack) {
+			Assert(Decrypt());
+		}
+		else {
+			Assert(Encrypt());
+		}
 	}
 	IDXFile.close();
+	if (!Unpack) {
+		File File;
+		File.open("pkg.idx", std::ios::binary);
+		char* Data;
+		int datasz;
+		IDXFileOut.seekg(0,std::ios::end);
+		datasz = IDXFileOut.tellg();
+		Data = new char[datasz];
+		IDXFileOut.seekg(std::ios::beg);
+		Assert(IDXFileOut.read(Data, datasz));
+		Assert(File.write(Data, datasz));
+		File.close();
+		IDXFileOut.close();
+	}
 	return true;
 }
