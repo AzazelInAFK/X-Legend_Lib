@@ -8,13 +8,16 @@
 #pragma once
 
 #include "Error.h"
+#include "File.h"
 
 namespace Seraph {
 	class BMP {
+	public:
 		BITMAPFILEHEADER Header;
 		BITMAPINFOHEADER Info;
-		//char* Data;
+		char* Data;
 	public:
+		bool Import(std::string FilePath);
 		bool Export(std::string FilePath, int Width, int Height, char* Data);
 	};
 }
