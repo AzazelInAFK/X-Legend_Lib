@@ -7,58 +7,56 @@
 
 #include "SMP.h"
 
-unsigned int Seraph::SMP::GetDataSize() {
-	return FullSz;
-}
-
-unsigned char* Seraph::SMP::GetData() {
-	return Data;
-}
-
-short Seraph::SMP::GetWidth() {
-	return m_Header.Width;
-}
-
-short Seraph::SMP::GetHeight() {
-	return m_Header.Height;
-}
-
-std::string Seraph::SMP::GetRelatedScene() {
-	return std::string(Link);
-}
-
-bool Seraph::SMP::SecurityCheck() {
-	if (strncmp(Signature, "SMP2.0", SignatureSz) != 0)
-		return false;
+bool Seraph::SMP::Save(std::string OutputPath) {
+	Assert(Out.open(OutputPath, std::ios::out | std::ios::binary));
+	Assert(Out.write(&SignatureSz));
+	Out << Signature;
+	Assert(Out.write((char*)&LinkSz, sizeof(short)));
+	Out << Link;
+	Assert(Out.write("\0\0\0\0", 4)); // unknown, put zeros in there
+	Assert(Out.write((char*)&m_Header, sizeof(Header)));
+	Assert(Out.write(Data, m_Header.LinearSz));
+	Out.close();
 	return true;
 }
 
 bool Seraph::SMP::Load(std::string FilePath) {
-	File.open(FilePath, std::ios::binary);
-	if (!File.is_open())
-		return Log("Failed to open " + FilePath);
-
-	File.read((char*)&SignatureSz, sizeof(short));
-	Signature = new char[SignatureSz+1];
-	File.read(Signature, SignatureSz);
-
-	if (!SecurityCheck())
-		return Log("This is not a SMP file.");
-
+	Assert(In.open(FilePath, std::ios::in | std::ios::binary));
+	Assert(In.read(&SignatureSz));
+	Signature = new char[SignatureSz + 1];
+	Assert(In.read(Signature, SignatureSz));
 	Signature[SignatureSz] = '\0';
-
-	File.read((char*)&LinkSz, sizeof(short));
-	Link = new char[LinkSz+1];
-	File.read(Link, LinkSz);
-
+	Assert(In.read(&LinkSz));
+	Link = new char[LinkSz + 1];
+	Assert(In.read(Link, LinkSz));
 	Link[LinkSz] = '\0';
-
-	File.read((char*)&m_Header, sizeof(Header));
-
-	unsigned int FullSz = m_Header.Width * m_Header.Height;
-	Data = new unsigned char[FullSz];
-
-	File.read((char*)Data, FullSz);
-
+	In.seekg(sizeof(long), std::ios::cur); // jump unknown data
+	Assert(In.read(&m_Header));
+	Data = new char[m_Header.LinearSz];
+	Assert(In.read(Data, m_Header.LinearSz));
+	In.close();
 	return true;
+}
+
+bool Seraph::SMP::ExportAsBMP(std::string OutputPath) {
+	BMP Image;
+	char* imgData = new char[m_Header.LinearSz * 4];
+	for (int Pos{ 0 }; Pos < m_Header.LinearSz; Pos++)
+		for (int RGBA{ 0 }; RGBA < 4; RGBA++)
+			imgData[Pos * 4 + RGBA] = Data[Pos];
+	Assert(Image.Export(OutputPath, m_Header.Width, m_Header.Height, imgData));
+	return true;
+}
+
+void Seraph::SMP::RemoveCollision() {
+	memset((void*)Data, 0, m_Header.LinearSz);
+}
+
+void Seraph::SMP::Shutdown() {
+	RemoveCollision();
+	memset(&m_Header, 0, sizeof(Header));
+	LinkSz = SignatureSz = 0;
+	delete Signature;
+	delete Link;
+	Link = Signature = nullptr;
 }
